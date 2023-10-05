@@ -14,7 +14,7 @@ Tracking live token transfers with Spec.
 * npm `>= 8`
 * Postgres `>= 14`
 * Spec CLI `>= 0.2.2`
-* Spec Client `>= 0.0.15`
+* Spec Client `>= 0.0.16`
 * An active Spec account
 
 # Installation
