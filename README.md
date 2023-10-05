@@ -181,7 +181,7 @@ _With Spec running in one terminal window_, open a new terminal window and jump 
 
 As you add new wallets, watch the logs of the Spec client (other terminal tab) as new transfers automatically get sourced:
 
-```
+```bash
 $ psql live-transfers
 
 => insert into wallet (address, chain_id) values ('0xb4e4b2e58354a8582c7edf81c5725d49774e213a', '1');
