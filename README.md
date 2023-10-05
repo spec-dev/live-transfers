@@ -52,7 +52,7 @@ $ createdb live-transfers
 This will create a new `wallet` table in your database with a handful of ethereum wallets for testing.
 
 ```bash
-$ psql live-transfers -f helpers/wallets.sql
+$ psql live-transfers -f helpers/wallet.sql
 ```
 
 # Initialize Spec Project
