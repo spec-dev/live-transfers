@@ -49,7 +49,7 @@ $ createdb live-transfers
 
 ### 4) Add the wallet table with some test wallets
 
-This will create a new `wallet` table in the database with a handful of ethereum wallets for testing.
+This will create a new `wallet` table in your database with a handful of ethereum wallets for testing.
 
 ```bash
 $ psql live-transfers -f helpers/wallets.sql
@@ -91,7 +91,7 @@ name = 'live-transfers'
 port = 5432
 host = 'localhost'
 user = '<your-db-username>' # should be autopopulated with your current db user
-password = '' # might not be needed
+password = '' # empty works most of the time
 ```
 
 ### 3) Set the local location of your Spec project
@@ -105,7 +105,7 @@ This next command will do the following 3 things:
 2. Set your _current_ project to `gitcoin/spec` (many CLI commands run using the _current_ project context)
 3. Tell the Spec CLI where your `gitcoin/spec` project exists locally
 
-```
+```bash
 $ spec link project gitcoin/spec .
 ```
 
@@ -129,7 +129,7 @@ The data "source" for this new Live Table will be Spec's [`tokens.TokenTransfer`
 
 ### 2) Filter the transfer data _on_ your wallet table
 
-Without filters, the current Spec config would pull _all_ token transfers, which we definitely don't want. So let's add some filters so that only token transfers _to or from_ any of the wallets in the `wallet` table are actually sourced.
+Without filters, the current Spec config would pull _all_ token transfers, which we definitely don't want. Let's add some filters so that only token transfers _to or from_ any of the wallets in the `wallet` table are actually sourced.
 
 Go into your `project.toml`, and in the "Links & Filters" section, add the following filters:
 
@@ -147,14 +147,42 @@ filterBy = [
 
 Now that we have a Live Table fully configured, let's run the Spec client against our database.
 
-When Spec starts up, it will...
+When the Spec client starts up, it will...
 
 1. Detect and run any new SQL migrations listed in `.spec/migrations/`
 2. Add triggers to any new Live Tables to track DB operations and react to them
-3. Backfill any new Live Tables
-4. Subscribe to events to keep your tables up-to-date
+3. Backfill any new Live Tables (i.e. your `token_transfer` table)
+4. Subscribe to the relevant events to keep your tables up-to-date
 5. Subscribe to reorgs and automatically course-correct
 
 ```bash
 $ spec start
+```
+
+# Jump into the data
+
+Now that your Live Table is up and running, and presumably done back-filling, you can check out some of your new data:
+
+```bash
+$ psql live-transfers
+
+=> select * from token_transfer;
+``` 
+
+# Play with Live Triggers
+
+As new token transfers occur on-chain, if any of them match your Live Table's filters (i.e. they involve any of the addresses in the `wallet` table), then they will be upserted into your `token_transfer` table.
+
+**Additionally**, Spec is also listening for new inserts in your `wallet` table. Any time a new wallet record is added, Spec will automatically source all transfers for that wallet. Let's test this out 🤓
+
+_With Spec running in one terminal window_, open a new terminal window and jump into the database:
+
+#### Terminal Tab 2
+
+As you add new wallets, watch the logs of the Spec client (other terminal tab) as new transfers automatically get sourced:
+
+```
+$ psql live-transfers
+
+=> insert into wallet (address, chain_id) values ('0xb4e4b2e58354a8582c7edf81c5725d49774e213a', '1');
 ```
